@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Construction Portfolio"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "c68b9777-bf56-4281-b9e1-72b41f438774"
+  }
+}

@@ -1,0 +1,64 @@
+table Cost
+	lineageTag: 6a584b53-6f81-404d-b59b-782bc5f069b4
+
+	column TransactionID
+		dataType: string
+		isHidden
+		lineageTag: 3bb8f5f3-4d6c-4bc3-a3a6-5d788bfd2114
+		summarizeBy: none
+		sourceColumn: TransactionID
+
+	column PostingDate
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 96c2b1a2-978f-4f60-a86f-ee9e55e4a75b
+		summarizeBy: none
+		sourceColumn: PostingDate
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ProjectID
+		dataType: string
+		isHidden
+		lineageTag: d3934bd1-be40-4258-a380-1c10abf69ab1
+		summarizeBy: none
+		sourceColumn: ProjectID
+
+	column CostCode
+		dataType: string
+		isHidden
+		lineageTag: 363d7c41-49fd-4635-9e46-569400c75545
+		summarizeBy: none
+		sourceColumn: CostCode
+
+	column Vendor
+		dataType: string
+		lineageTag: 715d2b2c-e949-43ca-bfb1-e62ba59ec395
+		summarizeBy: none
+		sourceColumn: Vendor
+
+	column CostType
+		dataType: string
+		lineageTag: b1666f79-1a34-43ff-a4de-10dfb835873e
+		summarizeBy: none
+		sourceColumn: CostType
+
+	column AmountAED
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: 5b187bf6-8fe9-453d-8960-f0205df4eeb4
+		summarizeBy: none
+		sourceColumn: AmountAED
+
+	partition Cost = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\fact_cost.csv"), [Delimiter=",", Columns=7, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {{"TransactionID", type text}, {"PostingDate", type date}, {"ProjectID", type text}, {"CostCode", type text}, {"Vendor", type text}, {"CostType", type text}, {"AmountAED", type number}}, "en-US")
+				in
+				    ChangedTypes
+

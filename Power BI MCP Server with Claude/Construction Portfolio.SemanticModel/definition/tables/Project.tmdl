@@ -1,0 +1,70 @@
+table Project
+	lineageTag: 5f186bb4-0490-42e7-97e6-ff114d3b199d
+
+	column ProjectID
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 400778ee-9d92-4bc2-8250-c94288be3023
+		summarizeBy: none
+		sourceColumn: ProjectID
+
+	column ProjectName
+		dataType: string
+		lineageTag: 3f466aa1-8908-444e-a0f8-a3f9ad587d57
+		summarizeBy: none
+		sourceColumn: ProjectName
+
+	column Sector
+		dataType: string
+		lineageTag: 2d271342-8ea1-4085-b8df-03deb1564dbd
+		summarizeBy: none
+		sourceColumn: Sector
+
+	column City
+		dataType: string
+		lineageTag: 4a0cf6ec-f23a-4d2c-8e3f-bc57f91a0830
+		summarizeBy: none
+		sourceColumn: City
+
+	column StartDate
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 8d3c7516-fe9c-4746-aed7-651d5f709f03
+		summarizeBy: none
+		sourceColumn: StartDate
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column PlannedFinish
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: a4200833-8c00-4a61-a4d9-59e871e91bfa
+		summarizeBy: none
+		sourceColumn: PlannedFinish
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ContractValueAED
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 74b86d70-4292-4f5a-a9ac-6d6c78abe644
+		summarizeBy: sum
+		sourceColumn: ContractValueAED
+
+	column ProjectManager
+		dataType: string
+		lineageTag: 3c906d0d-9c69-4946-8f99-cc3d7fcf71db
+		summarizeBy: none
+		sourceColumn: ProjectManager
+
+	partition Project = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\dim_project.csv"), [Delimiter=",", Columns=8, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {{"ProjectID", type text}, {"ProjectName", type text}, {"Sector", type text}, {"City", type text}, {"StartDate", type date}, {"PlannedFinish", type date}, {"ContractValueAED", type number}, {"ProjectManager", type text}}, "en-US")
+				in
+				    ChangedTypes
+

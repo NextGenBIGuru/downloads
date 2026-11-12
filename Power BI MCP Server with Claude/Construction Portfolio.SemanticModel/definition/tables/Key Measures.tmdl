@@ -1,0 +1,196 @@
+/// Home table for the model's measures.
+table 'Key Measures'
+	lineageTag: dff439e3-8ecc-446c-9242-6efa7e7ff131
+
+	/// Total approved budget (AED) for the selected projects and cost codes; not time-phased, so date filters don't change it.
+	measure 'Total Budget' = SUM ( Budget[BudgetAED] )
+		formatString: #,0
+		displayFolder: Cost
+		lineageTag: 63143838-3254-4603-b408-26980926ed42
+
+	/// Actual cost (AED) posted in the selected period.
+	measure 'Actual Cost' = SUM ( Cost[AmountAED] )
+		formatString: #,0
+		displayFolder: Cost
+		lineageTag: 6f96b058-5535-4c55-aa80-6d8331e5f672
+
+	/// Cumulative actual cost (AED) from the start of the data up to the last selected date; blank after the data cut-off.
+	measure 'Actual Cost to Date' =
+			VAR SelectedEndDate = MAX ( 'Date'[Date] )
+			VAR SelectedStartDate = MIN ( 'Date'[Date] )
+			VAR DataCutOff =
+			    CALCULATE ( MAX ( Cost[PostingDate] ), REMOVEFILTERS () )
+			RETURN
+			    IF (
+			        SelectedStartDate <= DataCutOff,
+			        CALCULATE (
+			            [Actual Cost],
+			            REMOVEFILTERS ( 'Date' ),
+			            'Date'[Date] <= SelectedEndDate
+			        )
+			    )
+		formatString: #,0
+		displayFolder: Cost
+		lineageTag: 4f5e77df-333b-4693-9eab-b2618ea1c898
+
+	/// Planned value (AED): per project, budget × latest cumulative planned % complete on or before the selected date.
+	measure 'Planned Value' =
+			VAR SelectedEndDate = MAX ( 'Date'[Date] )
+			VAR SelectedStartDate = MIN ( 'Date'[Date] )
+			VAR ProgressCutOff =
+			    CALCULATE ( MAX ( Progress[MonthEnd] ), REMOVEFILTERS () )
+			RETURN
+			    IF (
+			        SelectedStartDate <= ProgressCutOff,
+			        SUMX (
+			            VALUES ( Project[ProjectID] ),
+			            VAR StatusDate =
+			                CALCULATE (
+			                    MAX ( Progress[MonthEnd] ),
+			                    REMOVEFILTERS ( 'Date' ),
+			                    Progress[MonthEnd] <= SelectedEndDate
+			                )
+			            VAR PlannedPct =
+			                CALCULATE (
+			                    SUM ( Progress[PlannedPctComplete] ),
+			                    REMOVEFILTERS ( 'Date' ),
+			                    Progress[MonthEnd] = StatusDate
+			                )
+			            RETURN
+			                [Total Budget] * PlannedPct
+			        )
+			    )
+		formatString: #,0
+		displayFolder: EVM
+		lineageTag: 089fd4ac-94c9-43eb-a792-adcef361b856
+
+	/// Earned value (AED): per project, budget × latest cumulative actual % complete on or before the selected date.
+	measure 'Earned Value' =
+			VAR SelectedEndDate = MAX ( 'Date'[Date] )
+			VAR SelectedStartDate = MIN ( 'Date'[Date] )
+			VAR ProgressCutOff =
+			    CALCULATE ( MAX ( Progress[MonthEnd] ), REMOVEFILTERS () )
+			RETURN
+			    IF (
+			        SelectedStartDate <= ProgressCutOff,
+			        SUMX (
+			            VALUES ( Project[ProjectID] ),
+			            VAR StatusDate =
+			                CALCULATE (
+			                    MAX ( Progress[MonthEnd] ),
+			                    REMOVEFILTERS ( 'Date' ),
+			                    Progress[MonthEnd] <= SelectedEndDate
+			                )
+			            VAR ActualPct =
+			                CALCULATE (
+			                    SUM ( Progress[ActualPctComplete] ),
+			                    REMOVEFILTERS ( 'Date' ),
+			                    Progress[MonthEnd] = StatusDate
+			                )
+			            RETURN
+			                [Total Budget] * ActualPct
+			        )
+			    )
+		formatString: #,0
+		displayFolder: EVM
+		lineageTag: e4a8330f-6bc6-4049-a294-9f04fbfa7d8b
+
+	/// Planned % complete at the selected date (Planned Value ÷ Total Budget; budget-weighted across projects).
+	measure 'Planned % Complete' = DIVIDE ( [Planned Value], [Total Budget] )
+		formatString: 0.0%
+		displayFolder: EVM
+		lineageTag: bc3b91de-86ec-4c0e-82a3-69329e4fb53a
+
+	/// Actual % complete at the selected date (Earned Value ÷ Total Budget; budget-weighted across projects).
+	measure 'Actual % Complete' = DIVIDE ( [Earned Value], [Total Budget] )
+		formatString: 0.0%
+		displayFolder: EVM
+		lineageTag: c8a009a3-aa83-4fdb-ab1c-b1bbb34ffd9b
+
+	/// Cost Performance Index: Earned Value ÷ Actual Cost to Date; below 1 means over budget.
+	measure CPI = DIVIDE ( [Earned Value], [Actual Cost to Date] )
+		formatString: 0.00
+		displayFolder: EVM
+		lineageTag: 349862a6-bc4d-41f0-93a4-e99f3e5e6813
+
+	/// Schedule Performance Index: Earned Value ÷ Planned Value; below 1 means behind schedule.
+	measure SPI = DIVIDE ( [Earned Value], [Planned Value] )
+		formatString: 0.00
+		displayFolder: EVM
+		lineageTag: 9ce2f751-d1ad-4f84-9855-1e9cae2851db
+
+	/// Cost variance (AED): Earned Value − Actual Cost to Date; negative means over budget.
+	measure 'Cost Variance' = [Earned Value] - [Actual Cost to Date]
+		formatString: #,0
+		displayFolder: EVM
+		lineageTag: 8a147cc4-f591-4ea8-85ba-806073c4e756
+
+	/// Schedule variance (AED): Earned Value − Planned Value; negative means behind schedule.
+	measure 'Schedule Variance' = [Earned Value] - [Planned Value]
+		formatString: #,0
+		displayFolder: EVM
+		lineageTag: bdd19a1c-213c-4a8b-a841-4268110b7c1c
+
+	/// Cost variance as a share of earned value (Cost Variance ÷ Earned Value); negative means over budget.
+	measure 'Cost Variance %' = DIVIDE ( [Cost Variance], [Earned Value] )
+		formatString: 0.0%
+		displayFolder: EVM
+		lineageTag: a1d8e28b-e9b8-42ae-9a61-b6a98b947b62
+
+	/// Forecast final cost (AED): sum over projects of budget ÷ CPI; a project with no performance data yet counts at its budget.
+	measure 'Estimate at Completion' =
+			VAR HasPerformanceData =
+			    NOT ISBLANK ( [Earned Value] ) || NOT ISBLANK ( [Actual Cost to Date] )
+			RETURN
+			    IF (
+			        HasPerformanceData,
+			        SUMX (
+			            VALUES ( Project[ProjectID] ),
+			            VAR ProjectCPI = [CPI]
+			            RETURN
+			                IF (
+			                    ISBLANK ( ProjectCPI ),
+			                    [Total Budget],
+			                    DIVIDE ( [Total Budget], ProjectCPI )
+			                )
+			        )
+			    )
+		formatString: #,0
+		displayFolder: EVM
+		lineageTag: dd876a14-f744-4c42-a5cb-4429803fc00a
+
+	/// Forecast budget variance at completion (AED): Total Budget − Estimate at Completion; negative means forecast overrun.
+	measure 'Variance at Completion' =
+			VAR EAC = [Estimate at Completion]
+			RETURN
+			    IF ( NOT ISBLANK ( EAC ), [Total Budget] - EAC )
+		formatString: #,0
+		displayFolder: EVM
+		lineageTag: 0407fd05-eb99-4efd-9ad6-87db305a84ba
+
+	/// On track if CPI and SPI are both ≥ 0.95, At risk if either is below 0.90, otherwise Watch.
+	measure 'Project Health' =
+			VAR OnTrackThreshold = 0.95
+			VAR AtRiskThreshold = 0.90
+			VAR CurrentCPI = [CPI]
+			VAR CurrentSPI = [SPI]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( CurrentCPI ) || ISBLANK ( CurrentSPI ), BLANK (),
+			        CurrentCPI < AtRiskThreshold || CurrentSPI < AtRiskThreshold, "At risk",
+			        CurrentCPI < OnTrackThreshold || CurrentSPI < OnTrackThreshold, "Watch",
+			        "On track"
+			    )
+		displayFolder: Status
+		lineageTag: 4367fbae-9102-46a6-9036-95a24f0ba0f2
+
+	column _Placeholder
+		isHidden
+		isNameInferred
+		sourceColumn: [_Placeholder]
+
+	partition 'Key Measures' = calculated
+		mode: import
+		source = ROW("_Placeholder", BLANK())
+

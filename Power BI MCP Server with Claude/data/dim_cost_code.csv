@@ -1,0 +1,7 @@
+CostCode,CostCategory,Discipline
+CC01,Preliminaries,General
+CC02,Substructure,Civil
+CC03,Superstructure,Structural
+CC04,MEP,Mechanical & Electrical
+CC05,Finishes,Architectural
+CC06,External Works,Civil

@@ -1,0 +1,4 @@
+/// Folder that holds the CSV files (no trailing backslash).
+expression DataFolder = "C:\NextGenBIGuru\Power BI MCP Server with Claude\data" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 994ba381-949a-4a48-9afa-5e9336a2dba0
+

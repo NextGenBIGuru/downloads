@@ -1,0 +1,9 @@
+ProjectID,ProjectName,Sector,City,StartDate,PlannedFinish,ContractValueAED,ProjectManager
+P01,Creekside Residences,Residential,Dubai,2025-01-05,2026-12-20,182000000,Project Manager A
+P02,Harbour Day Clinic,Healthcare,Abu Dhabi,2025-02-10,2026-08-30,64000000,Project Manager B
+P03,Logistics Hub Phase 2,Industrial,Dubai,2025-03-01,2026-11-15,95000000,Project Manager C
+P04,Oasis Primary School,Education,Al Ain,2025-01-20,2026-06-30,48000000,Project Manager D
+P05,Corniche Office Tower,Commercial,Abu Dhabi,2025-04-15,2027-03-31,210000000,Project Manager A
+P06,Desert Road Interchange,Infrastructure,Sharjah,2025-02-01,2026-10-31,130000000,Project Manager B
+P07,Palm Grove Villas,Residential,Ras Al Khaimah,2025-05-01,2026-12-31,72000000,Project Manager C
+P08,Community Sports Centre,Leisure,Sharjah,2025-06-01,2026-09-30,38000000,Project Manager D

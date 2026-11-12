@@ -1,0 +1,32 @@
+table 'Cost Code'
+	lineageTag: 6eff6233-dc8c-4968-8d1c-83a0ebf98eba
+
+	column CostCode
+		dataType: string
+		isKey
+		lineageTag: c5ae436e-f395-4d51-b71e-dc0f3661f1cf
+		summarizeBy: none
+		sourceColumn: CostCode
+
+	column CostCategory
+		dataType: string
+		lineageTag: 28304e1d-fa20-4520-8e2e-6b17618e87b3
+		summarizeBy: none
+		sourceColumn: CostCategory
+
+	column Discipline
+		dataType: string
+		lineageTag: 15013895-a670-4dd5-b70d-4828c3058fcd
+		summarizeBy: none
+		sourceColumn: Discipline
+
+	partition 'Cost Code' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\dim_cost_code.csv"), [Delimiter=",", Columns=3, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    ChangedTypes = Table.TransformColumnTypes(PromotedHeaders, {{"CostCode", type text}, {"CostCategory", type text}, {"Discipline", type text}}, "en-US")
+				in
+				    ChangedTypes
+

@@ -1,0 +1,28 @@
+relationship Budget_ProjectID_Project_ProjectID
+	fromColumn: Budget.ProjectID
+	toColumn: Project.ProjectID
+
+relationship Cost_ProjectID_Project_ProjectID
+	fromColumn: Cost.ProjectID
+	toColumn: Project.ProjectID
+
+relationship Progress_ProjectID_Project_ProjectID
+	fromColumn: Progress.ProjectID
+	toColumn: Project.ProjectID
+
+relationship 'Budget_CostCode_Cost Code_CostCode'
+	fromColumn: Budget.CostCode
+	toColumn: 'Cost Code'.CostCode
+
+relationship 'Cost_CostCode_Cost Code_CostCode'
+	fromColumn: Cost.CostCode
+	toColumn: 'Cost Code'.CostCode
+
+relationship Cost_PostingDate_Date_Date
+	fromColumn: Cost.PostingDate
+	toColumn: Date.Date
+
+relationship Progress_MonthEnd_Date_Date
+	fromColumn: Progress.MonthEnd
+	toColumn: Date.Date
+

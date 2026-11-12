@@ -1,0 +1,59 @@
+/// Calendar table, 1 Jan 2025 to 31 Dec 2027. Marked as the model's date table.
+table Date
+	lineageTag: 980d960d-2050-42ba-9cfe-519f26d131e7
+	dataCategory: Time
+
+	column Date
+		isUnique
+		isKey
+		formatString: Short Date
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		formatString: 0
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year]
+
+	column Quarter
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Quarter]
+
+	column 'Month Number'
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Number]
+
+	column Month
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month]
+		sortByColumn: 'Month Number'
+
+	column 'Month End'
+		formatString: Short Date
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month End]
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition Date = calculated
+		mode: import
+		source =
+				ADDCOLUMNS(
+				    CALENDAR(DATE(2025, 1, 1), DATE(2027, 12, 31)),
+				    "Year", YEAR([Date]),
+				    "Quarter", "Q" & QUARTER([Date]),
+				    "Month Number", MONTH([Date]),
+				    "Month", FORMAT([Date], "mmm"),
+				    "Month End", EOMONTH([Date], 0)
+				)
+
